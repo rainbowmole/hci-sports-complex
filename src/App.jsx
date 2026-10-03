@@ -19,6 +19,10 @@ const pricing = {
   billiards: { 1: 180, 2: 240, 3: 300 },
 }
 
+function hourFromSlot(slot) {
+  return Number(slot.slice(0, 2)) + Number(slot.slice(3, 5)) / 60
+}
+
 const venueMap = {
   basketball: { kind: 'basketball', count: 2, prefix: 'Court' },
   volleyball: { kind: 'volleyball', count: 2, prefix: 'Court' },
@@ -165,7 +169,10 @@ function App() {
   }
 
   function confirmBooking() {
-    if (!canBook || reservationConflictMessage()) {
+    // Revalidate on submit, not only when rendering the slot grid. This
+    // prevents stale UI state from bypassing an interval overlap check.
+    const selectedSlotUnavailable = time ? slotIsUnavailable(time, duration, court) : true
+    if (!canBook || selectedSlotUnavailable || reservationConflictMessage()) {
       setModal(null)
       return
     }
@@ -222,14 +229,17 @@ function App() {
 
   function slotIsUnavailable(slot, hours = duration, selectedCourt = court) {
     if (!selectedCourt) return true
-    const startHour = Number(slot.slice(0, 2))
+    const startHour = hourFromSlot(slot)
     const selectedDateStart = new Date(`${date}T${slot}:00`)
     const tooSoon = date === localDateValue() && selectedDateStart.getTime() - now < 30 * 60 * 1000
     const busySlots = busySlotsByCourt[selectedCourt] || []
-    return tooSoon || sameDayReservation || startHour + hours > CLOSING_HOUR || busySlots.some((busySlot) => {
-      const busyHour = Number(busySlot.slice(0, 2))
-      return busyHour >= startHour && busyHour < startHour + hours
+    const requestedEnd = startHour + hours
+    const overlapsBusySlot = busySlots.some((busySlot) => {
+      const busyStart = hourFromSlot(busySlot)
+      const busyEnd = busyStart + 1
+      return startHour < busyEnd && busyStart < requestedEnd
     })
+    return tooSoon || sameDayReservation || requestedEnd > CLOSING_HOUR || overlapsBusySlot
   }
 
   function reservationOverlapsExistingBooking() {
