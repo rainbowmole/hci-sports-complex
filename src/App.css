@@ -414,3 +414,20 @@ footer { border-color: var(--line); color: #9cad9f; }
 .theme-light .my-booking, .theme-light .booked-card, .theme-light .reservation-card { background: var(--dark); color: #eff3e8; }
 .theme-light .modal { background: #f5f5ef; color: var(--ink); }
 .theme-light .modal-copy { color: #53625b; }
+
+/* On the light lime court tile, dark active strokes have stronger contrast
+   than the dark-theme lime strokes used on the charcoal tile. */
+.theme-light .booking-page .venue-item.selected .shared-court-basketball .basketball-lines,
+.theme-light .booking-page .venue-item:hover .shared-court-basketball .basketball-lines {
+  stroke: #173f2b;
+}
+.theme-light .booking-page .venue-item.selected .shared-court-volleyball .volleyball-lines,
+.theme-light .booking-page .venue-item:hover .shared-court-volleyball .volleyball-lines {
+  stroke: #173f2b;
+}
+.theme-light .booking-page .venue-item.selected .shared-court-basketball .volleyball-lines,
+.theme-light .booking-page .venue-item:hover .shared-court-basketball .volleyball-lines,
+.theme-light .booking-page .venue-item.selected .shared-court-volleyball .basketball-lines,
+.theme-light .booking-page .venue-item:hover .shared-court-volleyball .basketball-lines {
+  stroke: #718578;
+}
