@@ -154,6 +154,121 @@ nav button.active, nav button:hover { color: var(--lime); border-color: var(--li
 .modal-payment { font-weight: 700; }
 .booked-actions .reserve-button span { display: inline-grid; place-items: center; width: 26px; height: 26px; border: 1px solid currentColor; border-radius: 50%; font-size: 0; }
 .booked-actions .reserve-button span::after { content: '↻'; font-size: 18px; }
+
+/* Final booking layout and sport icon polish */
+.details-panel { padding-top: 28px; }
+.details-panel > h2 { margin-bottom: 30px; }
+.date-label { margin-top: 0; font-size: 12px; }
+.date-field { width: 100%; min-height: 48px; padding: 12px 0; cursor: pointer; }
+.date-field input { cursor: pointer; }
+.duration-group { margin-top: 4px; }
+.price-summary { align-items: center; min-height: 48px; }
+.price-summary span { color: #b8c9bc; }
+.price-summary strong { text-align: right; }
+.booking-footer { display: flex; justify-content: flex-end; margin: 24px 0 0; padding-left: 0; }
+.review-button { width: min(100%, 280px); min-height: 56px; margin-top: 0; padding: 16px 20px; font-size: 13px; }
+.court-back-link { color: #d9e8dc; font-size: 13px; font-weight: 700; padding: 12px 0; }
+.facility-east .facility-space { min-height: 190px; }
+.facility-east .facility-space .court-svg { height: 130px; min-height: 0; }
+.auth-actions { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
+.auth-actions .reserve-button { flex: 1; margin-top: 0; }
+.auth-actions .text-button { flex: 0 0 auto; }
+.auth-grid input,
+.auth-grid input:focus,
+.auth-grid input:-webkit-autofill {
+  background-color: #101b17 !important;
+  box-shadow: 0 0 0 1000px #101b17 inset !important;
+  color: #f1f7ed !important;
+  -webkit-text-fill-color: #f1f7ed !important;
+}
+
+.sport-icon.icon-basketball {
+  background: #d97935;
+  color: #fff2d6;
+}
+.sport-icon.icon-basketball:before {
+  border-width: 2px;
+}
+.sport-icon.icon-basketball:after {
+  width: 35px;
+  border-top-width: 2px;
+  transform: rotate(0);
+}
+.sport-icon.icon-basketball i {
+  height: 35px;
+  transform: rotate(90deg);
+}
+.sport-icon.icon-volleyball {
+  background: #dce9ef;
+  color: #466d82;
+}
+.sport-icon.icon-volleyball:before {
+  width: 35px;
+  height: 35px;
+  border-width: 2px;
+}
+.sport-icon.icon-volleyball:after {
+  width: 27px;
+  height: 35px;
+  border-left-width: 2px;
+  border-radius: 50%;
+  transform: rotate(-42deg);
+}
+.sport-icon.icon-volleyball i {
+  width: 29px;
+  height: 27px;
+  border-top-width: 2px;
+  transform: rotate(35deg);
+}
+.sport-icon.icon-badminton {
+  background: #dcebd1;
+  color: #4d7a47;
+}
+.sport-icon.icon-badminton:before {
+  width: 20px;
+  height: 28px;
+  border: 2px solid currentColor;
+  border-radius: 55% 55% 35% 35%;
+  transform: rotate(45deg) translate(4px, -4px);
+}
+.sport-icon.icon-badminton:after {
+  height: 27px;
+  border-left: 2px solid currentColor;
+  transform: rotate(45deg) translate(14px, 12px);
+}
+.sport-icon.icon-badminton i {
+  width: 18px;
+  height: 10px;
+  border-top: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translate(-2px, -11px);
+}
+.sport-icon.icon-billiards {
+  background: #d8d0e6;
+  color: #3a2f49;
+}
+.sport-icon.icon-billiards:before {
+  width: 34px;
+  height: 34px;
+  background: #17151d;
+  border: 2px solid #75688a;
+  border-radius: 50%;
+}
+.sport-icon.icon-billiards:after {
+  content: '8';
+  width: 13px;
+  height: 16px;
+  background: #f5f0ff;
+  border-radius: 50%;
+  color: #17151d;
+  font: 700 11px/16px Georgia, serif;
+  text-align: center;
+}
+
+@media (max-width: 520px) {
+  .auth-actions { align-items: stretch; flex-direction: column-reverse; }
+  .auth-actions .reserve-button { width: 100%; }
+}
 footer { border-color: var(--line); color: #9cad9f; }
 .facilities-page, .reservation-page { padding: 9vh 8.6vw 100px; }
 .facilities-page .page-heading, .reservation-page .page-heading { max-width: 1000px; margin-inline: auto; }
