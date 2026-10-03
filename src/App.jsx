@@ -107,7 +107,10 @@ function App() {
   const totalPrice = pricing[sport]?.[duration] || 0
   const downpayment = totalPrice * 0.15
   const hasActiveReservation = Boolean(booking && booking.status !== 'cancelled')
-  const sameDayReservation = Boolean(hasActiveReservation && booking.date === date)
+  // Guest booking screens must stay independent of another user's session.
+  // Once signed in, only that account's active reservation can block a date.
+  const reservationBelongsToUser = Boolean(user && hasActiveReservation && booking.ownerEmail === user.email)
+  const sameDayReservation = Boolean(reservationBelongsToUser && booking.date === date)
   const canBook = Boolean(court && time && !slotIsUnavailable(time))
   const bookingStart = booking ? new Date(`${booking.date}T${booking.time}:00`) : null
   const canCancel = bookingStart ? bookingStart.getTime() - now >= 30 * 60 * 1000 : false
@@ -131,10 +134,9 @@ function App() {
   // A reservation remains in local state after sign-out. This check is used
   // again after authentication so a pending guest booking cannot bypass it.
   function reservationConflictMessage(accountEmail = user?.email) {
-    if (!hasActiveReservation || !booking.ownerEmail || booking.ownerEmail === accountEmail) {
-      if (sameDayReservation) return 'You already have a reservation on this date.'
-      if (reservationOverlapsExistingBooking()) return 'This time overlaps your existing reservation.'
-    }
+    if (!accountEmail || !hasActiveReservation || booking.ownerEmail !== accountEmail) return ''
+    if (sameDayReservation) return 'You already have a reservation on this date.'
+    if (reservationOverlapsExistingBooking()) return 'This time overlaps your existing reservation.'
     return ''
   }
 
