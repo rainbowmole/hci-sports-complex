@@ -374,3 +374,6 @@ footer { border-color: var(--line); color: #9cad9f; }
 .booking-page .venue-item:hover .shared-court-svg .three-point-lines {
   stroke-width: 3.5;
 }
+.booked-actions { flex-wrap: wrap; }
+.demo-link { border: 0; padding: 8px 0 0; background: transparent; color: #9fbd8a; font-size: 10px; text-decoration: underline; cursor: pointer; }
+.demo-link:hover { color: var(--lime); }
