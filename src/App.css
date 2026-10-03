@@ -38,6 +38,106 @@
 .shared-diagram .court-svg { aspect-ratio: 520 / 270; }
 .venue-item.selected .shared-diagram > span:first-child .court-svg { opacity: .35; }
 .venue-item.selected .shared-diagram > span:last-child .court-svg { opacity: 1; }
+
+/* Dark theme and booking totals */
+:root {
+  color: #edf5ee;
+  background: #0d1413;
+  --ink: #edf5ee;
+  --muted: #a8b7ae;
+  --line: #34443d;
+  --lime: #c8f36a;
+  --paper: #121c19;
+  --dark: #0a100f;
+}
+body { background: #0d1413; }
+.app-shell { background: var(--paper); }
+.topbar { background: #101a17; border-color: var(--line); }
+.brand, nav button, .signin-link { color: var(--ink); }
+nav button { color: var(--muted); }
+nav button.active, nav button:hover { color: var(--lime); border-color: var(--lime); }
+.hero { background: #1a2b25; }
+.hero:after { background: #223a30; }
+.hero h1, .page-heading h1 { color: var(--ink); }
+.hero h1 em { color: #c7df9b; }
+.hero-copy, .page-heading p:not(.eyebrow), .panel-heading p { color: #b8c7bd; }
+.eyebrow { color: #b5d27b; }
+.sport-card { background: #182521; border-color: var(--line); color: var(--ink); }
+.sport-card small, .step-count, .back-link { color: var(--muted); }
+.sport-card:hover, .sport-card.selected { background: #263b31; border-color: var(--lime); color: #f5faee; }
+.page-heading { border-color: var(--line); }
+.map-panel, .details-panel { border-color: var(--line); }
+.venue-map, .facility-plan { background: #17251f; border-color: #3d5948; }
+.venue-item, .facility-space { background: #1e3028; border-color: #46614f; color: var(--ink); }
+.venue-item:hover, .venue-item.selected, .facility-space:hover { background: #365638; border-color: var(--lime); }
+.venue-item small, .facility-space > span { color: #b5c9b8; }
+.date-field { border-color: #668172; }
+.date-field span, .date-summary span { color: #aec2b4; }
+.date-field input { color: var(--ink); color-scheme: dark; }
+.duration-group button, .slot-grid button { background: #182721; border-color: var(--line); color: var(--ink); }
+.duration-group button.selected, .slot-grid button.selected { background: #385b3b; border-color: var(--lime); color: #f4fbe8; }
+.duration-group button small { display: block; color: #b9d87d; font-size: 10px; margin-top: 4px; }
+.slot-grid button small { color: #a9c9a9; }
+.price-summary, .payment-summary { display: flex; justify-content: space-between; gap: 16px; color: var(--muted); font-size: 12px; }
+.price-summary { border-top: 1px solid var(--line); padding-top: 14px; margin: -8px 0 26px; }
+.price-summary strong, .payment-summary strong { color: var(--lime); font-size: 16px; }
+.slot-label { border-color: var(--line); }
+.reserve-button { background: #07100d; color: #f1f7ed; }
+.reserve-button:disabled { background: #3b4943; color: #b3beb7; }
+.modal-backdrop { background: rgba(2, 8, 6, .78); }
+.modal { background: #182621; color: var(--ink); box-shadow: 0 18px 60px rgba(0, 0, 0, .5); }
+.modal-number { color: #6e8c73; }
+.modal-copy { color: #c0cec5; }
+.auth-grid input { background: #101b17; border-color: var(--line); color: var(--ink); }
+.auth-grid input::placeholder { color: #82958a; }
+.text-button { color: #c8d7cd; }
+.receipt { background: #21362b; border-color: #46614f; }
+.receipt span { color: #b9c9be; }
+.modal-payment { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 14px 0; margin: 20px 0; }
+.my-booking, .reservation-card { background: #0a100f; }
+.reservation-card p:not(.eyebrow) { color: #bdcbc1; }
+
+.booked-page { padding: 9vh 8.6vw 100px; }
+.booked-page .page-heading { max-width: 1000px; margin-inline: auto; }
+.booked-card, .empty-booked-card { max-width: 1000px; margin: 40px auto; padding: 38px; border: 1px solid #3f5e4b; background: #172820; box-shadow: 0 18px 45px rgba(0, 0, 0, .18); }
+.booked-card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.booked-card h2, .empty-booked-card h2 { margin: 0; color: #f1f8ed; font: 500 clamp(28px, 4vw, 44px)/1 Georgia, serif; letter-spacing: -.04em; }
+.status-badge { flex: 0 0 auto; border: 1px solid #c8f36a; border-radius: 999px; padding: 8px 12px; color: #c8f36a; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.status-cancelled { border-color: #79504b; background: #281d1b; }
+.status-cancelled .status-badge { border-color: #e49b8b; color: #e49b8b; }
+.status-paid .status-badge { border-color: #9ad8b1; color: #9ad8b1; }
+.booked-details { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 34px 0 26px; padding: 20px 0; border-top: 1px solid #3f5e4b; border-bottom: 1px solid #3f5e4b; }
+.booked-details span { display: flex; flex-direction: column; gap: 8px; }
+.booked-details small { color: #9db5a3; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+.booked-details strong { color: #f0f7ed; font-size: 15px; }
+.booked-card .payment-summary { align-items: center; }
+.booked-actions { display: flex; align-items: center; gap: 18px; margin-top: 30px; }
+.booked-actions .reserve-button { max-width: 230px; margin-top: 0; }
+.booked-actions .cancel-button { margin: 0; }
+.empty-booked-card { text-align: center; padding: 72px 38px; }
+.empty-booked-card p:not(.eyebrow) { color: #b8c9bc; margin: 14px auto 26px; }
+.empty-booked-card .reserve-button { max-width: 230px; margin: auto; text-align: left; }
+
+@media (max-width: 850px) {
+  .topbar { gap: 14px; }
+  nav { gap: 16px; }
+  nav button { font-size: 10px; }
+  .booked-page { padding-inline: 24px; }
+}
+@media (max-width: 520px) {
+  .topbar { padding-inline: 16px; }
+  .topbar .brand > span:last-child { display: none; }
+  nav { gap: 10px; }
+  nav button { padding-block: 24px 21px; font-size: 9px; letter-spacing: .04em; }
+  .profile > span:not(.avatar):not(.chevron) { display: none; }
+  .booked-card, .empty-booked-card { padding: 24px 20px; margin-top: 26px; }
+  .booked-card-heading { flex-direction: column; gap: 16px; }
+  .booked-details { grid-template-columns: 1fr; gap: 16px; }
+  .booked-card .payment-summary { align-items: stretch; flex-direction: column; gap: 12px; }
+  .booked-actions { align-items: stretch; flex-direction: column; }
+  .booked-actions .reserve-button { max-width: none; }
+}
+footer { border-color: var(--line); color: #9cad9f; }
 .facilities-page, .reservation-page { padding: 9vh 8.6vw 100px; }
 .facilities-page .page-heading, .reservation-page .page-heading { max-width: 1000px; margin-inline: auto; }
 .facility-plan { max-width: 1000px; min-height: 680px; margin: auto; padding: 30px; border: 1px solid #b9c7b5; background: #e7ede1; display: grid; grid-template-columns: 1fr 2.2fr 1fr; grid-template-rows: 62px 1fr 180px; gap: 12px; }
