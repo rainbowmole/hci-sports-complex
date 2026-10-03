@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
 
 const sports = [
@@ -52,6 +52,12 @@ function localDateValue(date = new Date()) {
   return `${year}-${month}-${day}`
 }
 
+function createPaymentReference() {
+  const timestamp = Date.now().toString(36).toUpperCase()
+  const randomPart = Math.random().toString(36).slice(2, 8).toUpperCase()
+  return `SC-${timestamp}-${randomPart}`
+}
+
 function SportIcon({ id }) {
   return <span className={`sport-icon icon-${id}`} aria-hidden="true"><i></i></span>
 }
@@ -83,7 +89,9 @@ function App() {
   const [authForm, setAuthForm] = useState({ ...testAccount, confirmPassword: testAccount.password })
   const [authError, setAuthError] = useState('')
   const [profileOpen, setProfileOpen] = useState(false)
+  const [paymentReference, setPaymentReference] = useState('')
   const [now, setNow] = useState(() => Date.now())
+  const dateInputRef = useRef(null)
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 30_000)
@@ -94,6 +102,8 @@ function App() {
   const map = venueMap[sport] || venueMap.basketball
   const totalPrice = pricing[sport]?.[duration] || 0
   const downpayment = totalPrice * 0.15
+  const hasActiveReservation = Boolean(booking && booking.status !== 'cancelled')
+  const sameDayReservation = Boolean(hasActiveReservation && booking.date === date)
   const canBook = Boolean(court && time && !slotIsUnavailable(time))
   const bookingStart = booking ? new Date(`${booking.date}T${booking.time}:00`) : null
   const canCancel = bookingStart ? bookingStart.getTime() - now >= 30 * 60 * 1000 : false
@@ -112,7 +122,7 @@ function App() {
   }
 
   function confirmBooking() {
-    if (!canBook) {
+    if (!canBook || sameDayReservation || reservationOverlapsExistingBooking()) {
       setModal(null)
       return
     }
@@ -122,8 +132,13 @@ function App() {
       setModal('signin')
       return
     }
-    setBooking({ sport, court, date, time, duration, totalPrice, downpayment, status: 'remaining balance' })
-    setModal('success')
+    setPaymentReference(createPaymentReference())
+    setModal('payment')
+  }
+
+  function completePayment() {
+    setBooking({ sport, court, date, time, duration, totalPrice, downpayment, status: 'remaining balance', paymentReference })
+    setModal('payment-success')
   }
 
   function updateAuth(field, value) {
@@ -159,10 +174,19 @@ function App() {
     const selectedDateStart = new Date(`${date}T${slot}:00`)
     const tooSoon = date === localDateValue() && selectedDateStart.getTime() - now < 30 * 60 * 1000
     const busySlots = busySlotsByCourt[selectedCourt] || []
-    return tooSoon || startHour + hours > 23 || busySlots.some((busySlot) => {
+    return tooSoon || sameDayReservation || startHour + hours > 23 || busySlots.some((busySlot) => {
       const busyHour = Number(busySlot.slice(0, 2))
       return busyHour >= startHour && busyHour < startHour + hours
     })
+  }
+
+  function reservationOverlapsExistingBooking() {
+    if (!hasActiveReservation || booking.date !== date || !time) return false
+    const requestedStart = Number(time.slice(0, 2))
+    const requestedEnd = requestedStart + duration
+    const existingStart = Number(booking.time.slice(0, 2))
+    const existingEnd = existingStart + booking.duration
+    return requestedStart < existingEnd && existingStart < requestedEnd
   }
 
   function selectDuration(hours) {
@@ -212,8 +236,8 @@ function App() {
 
       {page === 'booking' && <section className="page-section booking-page"><div className="booking-grid">
         <div className="map-panel"><div className="panel-heading"><div><h2>{selectedSport.label}</h2><p>{selectedSport.id === 'basketball' || selectedSport.id === 'volleyball' ? 'Choose a shared court' : `${map.count} spaces available`}</p></div><span className="map-key"><i></i> Available <i className="key-selected"></i> Selected <i className="key-full"></i> Fully booked</span></div><div className={`venue-map ${map.kind}`}>{Array.from({ length: map.count }, (_, index) => <button type="button" key={index} className={`venue-item ${court === index + 1 ? 'selected' : ''}`} onClick={() => { setCourt(index + 1); setTime(null) }} aria-label={`${map.prefix} ${index + 1}`}><span className="venue-drawing">{sport === 'basketball' || sport === 'volleyball' ? <SharedCourtDiagram sport={sport} /> : <CourtDiagram kind={map.kind} />}</span><strong>{map.prefix} {index + 1}</strong><small>{court === index + 1 ? 'Selected' : 'Available'}</small></button>)}</div><button className="back-link court-back-link" type="button" onClick={() => setPage('sports')}>← Back to sports</button></div>
-        <aside className="details-panel"><h2>Booking</h2><label className="field-label date-label" htmlFor="date">Pick a date</label><label className="date-field" htmlFor="date"><span>▣</span><input id="date" type="date" value={date} min={localDateValue()} onChange={(event) => { setDate(event.target.value); setTime(null) }} /></label><div className="date-summary"><strong>{formatDate(date)}</strong><span>Local time</span></div><label className="field-label">Rates</label><div className="duration-group">{[1, 2, 3].map((hours) => <button key={hours} type="button" className={duration === hours ? 'selected' : ''} onClick={() => selectDuration(hours)}>{hours} hr{hours > 1 ? 's' : ''}<small>{formatCurrency(pricing[sport]?.[hours] || 0)}</small></button>)}</div><div className="price-summary"><span>{court ? `${map.prefix} ${court}` : 'Selected package'}</span><strong>{duration} hr{duration > 1 ? 's' : ''} | {formatCurrency(totalPrice)}</strong></div>{court ? <><label className="field-label slot-label">Available start times</label><div className="slot-grid">{slots.map((slot) => { const unavailable = slotIsUnavailable(slot); const selected = time === slot; const busySlots = busySlotsByCourt[court] || []; return <button key={slot} type="button" disabled={unavailable} className={`${selected ? 'selected' : ''} ${unavailable ? 'unavailable' : ''}`} onClick={() => setTime(slot)}>{slot}<small>{busySlots.includes(slot) ? 'Booked' : unavailable ? 'Unavailable' : 'Open'}</small></button> })}</div></> : <p className="hint">Choose a court above to see its available times.</p>}</aside>
-      </div><div className="booking-footer"><button type="button" className="reserve-button review-button" disabled={!canBook} onClick={() => setModal('confirm')}>Review reservation<span>↗</span></button></div></section>}
+        <aside className="details-panel"><h2>Booking</h2><label className="field-label date-label" htmlFor="date">Pick a date</label><label className="date-field" htmlFor="date" onClick={(event) => { if (event.target !== dateInputRef.current) dateInputRef.current?.showPicker?.() }}><span>▣</span><input ref={dateInputRef} id="date" type="date" value={date} min={localDateValue()} onChange={(event) => { setDate(event.target.value); setTime(null) }} /></label><div className="date-summary"><strong>{formatDate(date)}</strong><span>Local time</span></div><label className="field-label">Rates</label><div className="duration-group">{[1, 2, 3].map((hours) => <button key={hours} type="button" className={duration === hours ? 'selected' : ''} onClick={() => selectDuration(hours)}>{hours} hr{hours > 1 ? 's' : ''}<small>{formatCurrency(pricing[sport]?.[hours] || 0)}</small></button>)}</div><div className="price-summary"><span>{court ? `${map.prefix} ${court}` : 'Selected package'}</span><strong>{duration} hr{duration > 1 ? 's' : ''} | {formatCurrency(totalPrice)}</strong></div>{court ? <><label className="field-label slot-label">Available start times</label><div className="slot-grid">{slots.map((slot) => { const unavailable = slotIsUnavailable(slot); const selected = time === slot; const busySlots = busySlotsByCourt[court] || []; return <button key={slot} type="button" disabled={unavailable} className={`${selected ? 'selected' : ''} ${unavailable ? 'unavailable' : ''}`} onClick={() => setTime(slot)}>{slot}<small>{busySlots.includes(slot) ? 'Booked' : unavailable ? 'Unavailable' : 'Open'}</small></button> })}</div>{sameDayReservation && <p className="hint reservation-warning">You already have a reservation on this date. Choose another date to book again.</p>}</> : <p className="hint">Choose a court above to see its available times.</p>}</aside>
+      </div><div className="booking-footer"><button type="button" className="reserve-button review-button" disabled={!canBook || sameDayReservation || reservationOverlapsExistingBooking()} onClick={() => setModal('confirm')}>Review reservation<span>↗</span></button></div></section>}
 
       {page === 'facilities' && <section className="page-section facilities-page"><div className="page-heading"><div><p className="eyebrow">Sport Complex</p><h1>Facilities.</h1><p>Every space, laid out so you can see the whole club.</p></div></div><div className="facility-plan"><div className="facility-label">Entrance / reception</div><div className="facility-west"><button className="facility-space" type="button" onClick={() => goToSport('pickleball')}><span>Pickleball 1</span><CourtDiagram kind="pickleball" /></button><button className="facility-space" type="button" onClick={() => goToSport('pickleball')}><span>Pickleball 2</span><CourtDiagram kind="pickleball" /></button></div><div className="facility-center">{['Badminton 1', 'Badminton 2', 'Badminton 3', 'Badminton 4'].map((label) => <button className="facility-space" type="button" key={label} onClick={() => goToSport('badminton')}><span>{label}</span><CourtDiagram kind="badminton" /></button>)}</div><div className="facility-east"><button className="facility-space" type="button" onClick={() => goToSport('table-tennis')}><span>Table tennis space</span><CourtDiagram kind="table" /></button><button className="facility-space" type="button" onClick={() => goToSport('billiards')}><span>Billiards space</span><CourtDiagram kind="billiards" /></button></div><div className="facility-south"><button className="facility-space" type="button" onClick={() => goToSport('basketball')}><span>Basketball / Volleyball</span><SharedCourtDiagram facility /></button><button className="facility-space" type="button" onClick={() => goToSport('volleyball')}><span>Basketball / Volleyball</span><SharedCourtDiagram facility /></button></div></div></section>}
 
@@ -221,7 +245,7 @@ function App() {
 
       <footer><span>SPORT COMPLEX / COMMUNITY SPORTS CLUB</span><span>Need a hand? hello@sportcomplex.club</span><span>© 2026</span></footer>
 
-      {modal && <div className="modal-backdrop"><div className="modal" role="dialog" aria-modal="true">{modal === 'signin' && <><span className="modal-number">SC</span><p className="eyebrow">Create your account</p><h2>{authStep === 'details' ? 'Sign in to book.' : 'Create a password.'}</h2>{authStep === 'details' ? <><div className="auth-grid"><input placeholder="First name" value={authForm.firstName} onChange={(event) => updateAuth('firstName', event.target.value)} /><input placeholder="Last name" value={authForm.lastName} onChange={(event) => updateAuth('lastName', event.target.value)} /><input className="wide" type="email" placeholder="Email" value={authForm.email} onChange={(event) => updateAuth('email', event.target.value)} /><input className="wide" type="tel" placeholder="Phone number" value={authForm.phone} onChange={(event) => updateAuth('phone', event.target.value)} /></div><button type="button" className="reserve-button" onClick={continueAuth}>Next <span>↗</span></button></> : <><div className="auth-grid"><input className="wide" type="password" placeholder="Password" value={authForm.password} onChange={(event) => updateAuth('password', event.target.value)} />      <input className="wide" type="password" placeholder="Validate password" value={authForm.confirmPassword} onChange={(event) => updateAuth('confirmPassword', event.target.value)} /></div><div className="auth-actions"><button type="button" className="text-button" onClick={backToAuthDetails}>← Back</button><button type="button" className="reserve-button" onClick={finishAuth}>Create account <span>↗</span></button></div></>}{authError && <p className="auth-error">{authError}</p>}<button type="button" className="text-button" onClick={() => setModal(null)}>Cancel</button></>}{modal === 'confirm' && <><p className="eyebrow">Almost there</p><h2>Lock in your session?</h2><p className="modal-copy">You're booking <strong>{selectedSport.label} · {map.prefix} {court}</strong> for <strong>{formatDate(date)}</strong> at <strong>{time}</strong> for <strong>{duration} hour{duration > 1 ? 's' : ''}</strong>. Reservations must be made at least 30 minutes before the start.</p><div className="payment-summary modal-payment"><span>Total price <strong>{formatCurrency(totalPrice)}</strong></span><span>Due now (15%) <strong>{formatCurrency(downpayment)}</strong></span></div><div className="modal-actions"><button type="button" className="text-button" onClick={() => setModal(null)}>Go back</button><button type="button" className="reserve-button" onClick={confirmBooking}>Confirm booking <span>↗</span></button></div></>}{modal === 'success' && <><span className="success-mark">✓</span><p className="eyebrow">You're all set</p><h2>Booking confirmed.</h2><p className="modal-copy">Your space is waiting. We've saved this reservation to your account.</p><div className="receipt"><span>{formatDate(date)}</span><strong>{selectedSport.label} · {map.prefix} {court}</strong><span>{time} · {duration} hour{duration > 1 ? 's' : ''}</span></div><div className="payment-summary modal-payment"><span>Total price <strong>{formatCurrency(totalPrice)}</strong></span><span>15% downpayment <strong>{formatCurrency(downpayment)}</strong></span></div><button type="button" className="reserve-button" onClick={() => setModal(null)}>Done <span>↗</span></button></>}{modal === 'cancel' && <><span className="modal-number">!</span><p className="eyebrow">Cancel reservation</p><h2>Let this one go?</h2><p className="modal-copy">You can cancel up to 30 minutes before your scheduled start time.</p><div className="modal-actions"><button type="button" className="text-button" onClick={() => setModal(null)}>Keep booking</button><button type="button" className="cancel-button" onClick={cancelBooking}>Cancel booking</button></div></>}</div></div>}
+      {modal && <div className="modal-backdrop"><div className="modal" role="dialog" aria-modal="true">{modal === 'signin' && <><span className="modal-number">SC</span><p className="eyebrow">Create your account</p><h2>{authStep === 'details' ? 'Sign in to book.' : 'Create a password.'}</h2>{authStep === 'details' ? <><div className="auth-grid"><input placeholder="First name" value={authForm.firstName} onChange={(event) => updateAuth('firstName', event.target.value)} /><input placeholder="Last name" value={authForm.lastName} onChange={(event) => updateAuth('lastName', event.target.value)} /><input className="wide" type="email" placeholder="Email" value={authForm.email} onChange={(event) => updateAuth('email', event.target.value)} /><input className="wide" type="tel" placeholder="Phone number" value={authForm.phone} onChange={(event) => updateAuth('phone', event.target.value)} /></div><button type="button" className="reserve-button" onClick={continueAuth}>Next <span>↗</span></button></> : <><div className="auth-grid"><input className="wide" type="password" placeholder="Password" value={authForm.password} onChange={(event) => updateAuth('password', event.target.value)} />      <input className="wide" type="password" placeholder="Validate password" value={authForm.confirmPassword} onChange={(event) => updateAuth('confirmPassword', event.target.value)} /></div><div className="auth-actions"><button type="button" className="text-button" onClick={backToAuthDetails}>← Back</button><button type="button" className="reserve-button" onClick={finishAuth}>Create account <span>↗</span></button></div></>}{authError && <p className="auth-error">{authError}</p>}<button type="button" className="text-button" onClick={() => setModal(null)}>Cancel      </button></>}{modal === 'payment' && <><p className="eyebrow">Online payment</p><h2>Pay your downpayment.</h2><p className="modal-copy">This is a payment placeholder for the online transaction. Your reservation will be saved after you continue.</p><div className="payment-placeholder"><span className="payment-placeholder-icon">₱</span><div><strong>Online payment gateway</strong><small>GCash, Maya, or card checkout placeholder</small></div></div><label className="payment-reference-label" htmlFor="payment-reference">Generated transaction reference</label><input className="payment-reference-input" id="payment-reference" value={paymentReference} readOnly /><div className="payment-summary modal-payment"><span>Due now (15%) <strong>{formatCurrency(downpayment)}</strong></span></div><div className="modal-actions"><button type="button" className="text-button" onClick={() => setModal('confirm')}>Go back</button><button type="button" className="reserve-button" onClick={completePayment}>Continue payment <span>↗</span></button></div></>}{modal === 'confirm' && <><p className="eyebrow">Almost there</p><h2>Lock in your session?</h2><p className="modal-copy">You're booking <strong>{selectedSport.label} · {map.prefix} {court}</strong> for <strong>{formatDate(date)}</strong> at <strong>{time}</strong> for <strong>{duration} hour{duration > 1 ? 's' : ''}</strong>. Reservations must be made at least 30 minutes before the start.</p><div className="payment-summary modal-payment"><span>Total price <strong>{formatCurrency(totalPrice)}</strong></span><span>Due now (15%) <strong>{formatCurrency(downpayment)}</strong></span></div><div className="modal-actions"><button type="button" className="text-button" onClick={() => setModal(null)}>Go back</button><button type="button" className="reserve-button" onClick={confirmBooking}>Confirm booking <span>↗</span></button></div></>}{modal === 'payment-success' && <><span className="success-mark">✓</span><p className="eyebrow">Payment successful</p><h2>Downpayment received.</h2><p className="modal-copy">Your demo online payment was successful. Transaction reference:</p><div className="payment-reference-receipt">{paymentReference}</div><button type="button" className="reserve-button" onClick={() => setModal('success')}>View booking confirmation <span>↗</span></button></>}{modal === 'success' && <><span className="success-mark">✓</span><p className="eyebrow">You're all set</p><h2>Booking confirmed.</h2><p className="modal-copy">Your space is waiting. We've saved this reservation to your account.</p><div className="receipt"><span>{formatDate(date)}</span><strong>{selectedSport.label} · {map.prefix} {court}</strong>      <span>{time} · {duration} hour{duration > 1 ? 's' : ''}</span></div><div className="payment-summary modal-payment"><span>Total price <strong>{formatCurrency(totalPrice)}</strong></span><span>15% downpayment <strong>{formatCurrency(downpayment)}</strong></span></div><button type="button" className="reserve-button" onClick={() => setModal(null)}>Done <span>↗</span></button></>}{modal === 'cancel' && <><span className="modal-number">!</span><p className="eyebrow">Cancel reservation</p><h2>Let this one go?</h2><p className="modal-copy">You can cancel up to 30 minutes before your scheduled start time.</p><div className="modal-actions"><button type="button" className="text-button" onClick={() => setModal(null)}>Keep booking</button><button type="button" className="cancel-button" onClick={cancelBooking}>Cancel booking</button></div></>}</div></div>}
     </main>
   )
 }

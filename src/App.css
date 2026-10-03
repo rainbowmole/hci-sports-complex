@@ -91,9 +91,9 @@ nav button.active, nav button:hover { color: var(--lime); border-color: var(--li
 .auth-grid input { background: #101b17; border-color: var(--line); color: var(--ink); }
 .auth-grid input::placeholder { color: #82958a; }
 .text-button { color: #c8d7cd; }
-.receipt { background: #21362b; border-color: #46614f; }
+.receipt { background: #21362b; border-color: #46614f; padding: 20px 18px; margin: 24px 0; gap: 9px; }
 .receipt span { color: #b9c9be; }
-.modal-payment { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 14px 0; margin: 20px 0; }
+.modal-payment { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 16px 8px; margin: 20px 0; }
 .my-booking, .reservation-card { background: #0a100f; }
 .reservation-card p:not(.eyebrow) { color: #bdcbc1; }
 
@@ -152,6 +152,18 @@ nav button.active, nav button:hover { color: var(--lime); border-color: var(--li
 .modal-actions .reserve-button { background: var(--lime); color: #101a13; font-weight: 800; box-shadow: 0 8px 22px rgba(200, 243, 106, .2); }
 .modal-actions .reserve-button span { color: #101a13; }
 .modal-payment { font-weight: 700; }
+.payment-placeholder { display: flex; align-items: center; gap: 12px; margin: 22px 0; padding: 16px; border: 1px dashed #668172; background: #101b17; }
+.payment-placeholder-icon { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid var(--lime); border-radius: 50%; color: var(--lime); font-weight: 800; }
+.payment-placeholder strong, .payment-placeholder small { display: block; }
+.payment-placeholder strong { color: #f1f7ed; font-size: 13px; }
+.payment-placeholder small { margin-top: 4px; color: #a9bdb0; font-size: 10px; }
+.payment-reference-label { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; color: #dce9df; font-size: 11px; font-weight: 700; }
+.payment-reference-label span { color: #8da498; font-size: 9px; font-weight: 400; }
+.payment-reference-input { width: 100%; border: 1px solid var(--line); background: #101b17; color: #f1f7ed; caret-color: var(--lime); padding: 13px; outline: 0; font-size: 12px; }
+.payment-reference-input::placeholder { color: #8fa59a; }
+.payment-reference-input:focus { border-color: var(--lime); box-shadow: 0 0 0 2px rgba(200, 243, 106, .14); }
+.payment-reference-receipt { margin: 20px 0 24px; padding: 14px; border: 1px solid #46614f; background: #21362b; color: var(--lime); font: 700 14px/1.4 monospace; letter-spacing: .08em; text-align: center; }
+.reservation-warning { color: #f0b09b; margin-top: 14px; }
 .booked-actions .reserve-button span { display: inline-grid; place-items: center; width: 26px; height: 26px; border: 1px solid currentColor; border-radius: 50%; font-size: 0; }
 .booked-actions .reserve-button span::after { content: '↻'; font-size: 18px; }
 
@@ -159,8 +171,10 @@ nav button.active, nav button:hover { color: var(--lime); border-color: var(--li
 .details-panel { padding-top: 28px; }
 .details-panel > h2 { margin-bottom: 30px; }
 .date-label { margin-top: 0; font-size: 12px; }
-.date-field { width: 100%; min-height: 48px; padding: 12px 0; cursor: pointer; }
-.date-field input { cursor: pointer; }
+.date-field { width: 100%; min-height: 64px; padding: 10px 14px; border: 1px solid #4b6555; border-radius: 8px; background: #182a21; cursor: pointer; transition: border-color .2s, background .2s, box-shadow .2s; }
+.date-field:hover, .date-field:focus-within { border-color: var(--lime); background: #1d3327; box-shadow: 0 0 0 3px rgba(190, 215, 91, .12); }
+.date-field span { display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 32px; border: 1px solid #6c856f; border-radius: 6px; color: var(--lime); font-size: 16px; }
+.date-field input { min-width: 0; height: 42px; padding: 0; border: 0; outline: 0; background: transparent; cursor: pointer; font-size: 15px; font-weight: 600; }
 .duration-group { margin-top: 4px; }
 .price-summary { align-items: center; min-height: 48px; }
 .price-summary span { color: #b8c9bc; }
