@@ -28,7 +28,11 @@ const venueMap = {
   billiards: { kind: 'billiards', count: 2, prefix: 'Table' },
 }
 
-const slots = ['07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00']
+const OPENING_HOUR = 7
+const CLOSING_HOUR = 23
+// Include every possible start hour. The duration check below removes starts
+// that would run past closing time (22:00 for one hour, 21:00 for two, etc.).
+const slots = Array.from({ length: CLOSING_HOUR - OPENING_HOUR }, (_, index) => `${String(OPENING_HOUR + index).padStart(2, '0')}:00`)
 const busySlotsByCourt = {
   1: ['08:00', '12:00', '17:00'],
   2: ['09:00', '14:00', '18:00'],
@@ -215,7 +219,7 @@ function App() {
     const selectedDateStart = new Date(`${date}T${slot}:00`)
     const tooSoon = date === localDateValue() && selectedDateStart.getTime() - now < 30 * 60 * 1000
     const busySlots = busySlotsByCourt[selectedCourt] || []
-    return tooSoon || sameDayReservation || startHour + hours > 23 || busySlots.some((busySlot) => {
+    return tooSoon || sameDayReservation || startHour + hours > CLOSING_HOUR || busySlots.some((busySlot) => {
       const busyHour = Number(busySlot.slice(0, 2))
       return busyHour >= startHour && busyHour < startHour + hours
     })

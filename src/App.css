@@ -201,16 +201,26 @@ nav button.active, nav button:hover { color: var(--lime); border-color: var(--li
   color: #fff2d6;
 }
 .sport-icon.icon-basketball:before {
+  width: 34px;
+  height: 34px;
   border-width: 2px;
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .18) 0 2px, transparent 3px);
 }
 .sport-icon.icon-basketball:after {
-  width: 35px;
-  border-top-width: 2px;
-  transform: rotate(0);
+  width: 39px;
+  height: 18px;
+  border-top: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  border-radius: 50%;
+  transform: rotate(-42deg);
 }
 .sport-icon.icon-basketball i {
-  height: 35px;
-  transform: rotate(90deg);
+  width: 15px;
+  height: 39px;
+  border-left: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  border-radius: 50%;
+  transform: rotate(42deg);
 }
 .sport-icon.icon-volleyball {
   background: #dce9ef;
@@ -239,23 +249,24 @@ nav button.active, nav button:hover { color: var(--lime); border-color: var(--li
   color: #4d7a47;
 }
 .sport-icon.icon-badminton:before {
-  width: 20px;
-  height: 28px;
+  width: 11px;
+  height: 11px;
   border: 2px solid currentColor;
-  border-radius: 55% 55% 35% 35%;
-  transform: rotate(45deg) translate(4px, -4px);
+  border-radius: 50%;
+  transform: translate(-7px, -14px);
 }
 .sport-icon.icon-badminton:after {
-  height: 27px;
-  border-left: 2px solid currentColor;
-  transform: rotate(45deg) translate(14px, 12px);
+  width: 25px;
+  height: 19px;
+  border: 2px solid currentColor;
+  border-radius: 50% 50% 18% 18%;
+  transform: rotate(14deg) translate(7px, 7px);
 }
 .sport-icon.icon-badminton i {
-  width: 18px;
-  height: 10px;
-  border-top: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  transform: rotate(45deg) translate(-2px, -11px);
+  width: 30px;
+  height: 2px;
+  background: currentColor;
+  transform: rotate(48deg) translate(5px, 8px);
 }
 .sport-icon.icon-billiards {
   background: #d8d0e6;
