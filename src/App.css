@@ -375,8 +375,7 @@ footer { border-color: var(--line); color: #9cad9f; }
   stroke-width: 3.5;
 }
 .booked-actions { flex-wrap: wrap; }
-.demo-link { border: 0; padding: 8px 0 0; background: transparent; color: #9fbd8a; font-size: 10px; text-decoration: underline; cursor: pointer; }
-.demo-link:hover { color: var(--lime); }
+.demo-placeholder { margin: 18px 0 0; padding: 11px 13px; border: 1px dashed #6d8a73; background: rgba(109, 138, 115, .12); color: #9fbd8a; font-size: 10px; line-height: 1.45; }
 
 .topbar-actions { display: flex; align-items: center; gap: 16px; }
 .theme-toggle { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); border-radius: 999px; padding: 8px 11px; background: transparent; color: var(--ink); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
@@ -443,6 +442,7 @@ footer { border-color: var(--line); color: #9cad9f; }
 .theme-light .booked-details small { color: #b7d0ba; }
 .theme-light .booked-details strong { color: #f0f7ed; }
 .theme-light .empty-booked-card p:not(.eyebrow) { color: #c7d8ca; }
+.theme-light .demo-placeholder { border-color: #8ca78e; background: #edf3ea; color: #416d4b; }
 .theme-light footer { color: #53665a; }
 
 /* On the light lime court tile, dark active strokes have stronger contrast
