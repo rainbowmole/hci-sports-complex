@@ -377,3 +377,40 @@ footer { border-color: var(--line); color: #9cad9f; }
 .booked-actions { flex-wrap: wrap; }
 .demo-link { border: 0; padding: 8px 0 0; background: transparent; color: #9fbd8a; font-size: 10px; text-decoration: underline; cursor: pointer; }
 .demo-link:hover { color: var(--lime); }
+
+.topbar-actions { display: flex; align-items: center; gap: 16px; }
+.theme-toggle { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); border-radius: 999px; padding: 8px 11px; background: transparent; color: var(--ink); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+.theme-toggle span:first-child { color: var(--lime); font-size: 15px; line-height: 1; }
+.theme-toggle:hover, .theme-toggle:focus-visible { border-color: var(--lime); outline: 0; }
+
+/* Light mode keeps the same semantic colors while replacing dark surfaces. */
+.app-shell.theme-light {
+  --ink: #17231f;
+  --muted: #65736b;
+  --line: #cbd5ca;
+  --paper: #f5f5ef;
+  --dark: #17231f;
+  background: var(--paper);
+  color: var(--ink);
+}
+.theme-light .topbar { background: #f5f5ef; border-color: var(--line); }
+.theme-light .brand, .theme-light nav button, .theme-light .signin-link { color: var(--ink); }
+.theme-light nav button { color: var(--muted); }
+.theme-light .hero { background: #e9eee2; }
+.theme-light .hero:after { background: #dce8cd; }
+.theme-light .hero-copy, .theme-light .page-heading p:not(.eyebrow), .theme-light .panel-heading p { color: #53625b; }
+.theme-light .eyebrow { color: #70806e; }
+.theme-light .sport-card { background: #f4f6ed; border-color: var(--line); color: var(--ink); }
+.theme-light .sport-card:hover, .theme-light .sport-card.selected { background: var(--dark); color: #f2f4e9; }
+.theme-light .venue-map, .theme-light .facility-plan { background: #e7ede1; border-color: #c7d0c2; }
+.theme-light .venue-item, .theme-light .facility-space { background: #f4f6ed; border-color: #aebca7; color: var(--ink); }
+.theme-light .venue-item:hover, .theme-light .venue-item.selected, .theme-light .facility-space:hover { background: var(--lime); border-color: #8fa34b; }
+.theme-light .venue-item small, .theme-light .facility-space > span { color: #70806e; }
+.theme-light .date-field { background: transparent; border-color: #8e9b8b; }
+.theme-light .date-field input { color: var(--ink); color-scheme: light; }
+.theme-light .duration-group button, .theme-light .slot-grid button { background: #fafaf5; border-color: var(--line); color: var(--ink); }
+.theme-light .duration-group button.selected { background: var(--dark); color: var(--lime); }
+.theme-light .profile-menu { background: #f5f5ef; border-color: var(--line); color: var(--ink); box-shadow: 0 12px 28px rgba(23, 35, 31, .16); }
+.theme-light .my-booking, .theme-light .booked-card, .theme-light .reservation-card { background: var(--dark); color: #eff3e8; }
+.theme-light .modal { background: #f5f5ef; color: var(--ink); }
+.theme-light .modal-copy { color: #53625b; }

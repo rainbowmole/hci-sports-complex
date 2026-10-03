@@ -99,12 +99,19 @@ function App() {
   const [profileOpen, setProfileOpen] = useState(false)
   const [paymentReference, setPaymentReference] = useState('')
   const [now, setNow] = useState(() => Date.now())
+  const [theme, setTheme] = useState(() => window.localStorage.getItem('sport-complex-theme') || 'dark')
   const dateInputRef = useRef(null)
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 30_000)
     return () => window.clearInterval(timer)
   }, [])
+
+  // Persist only the visual preference; booking and account state stay local
+  // to the current session as before.
+  useEffect(() => {
+    window.localStorage.setItem('sport-complex-theme', theme)
+  }, [theme])
 
   const selectedSport = sports.find((item) => item.id === sport) || sports[0]
   const map = venueMap[sport] || venueMap.basketball
@@ -293,11 +300,11 @@ function App() {
   }
 
   return (
-    <main className="app-shell">
+    <main className={`app-shell theme-${theme}`}>
       <header className="topbar">
         <button className="brand" type="button" onClick={() => setPage('home')} aria-label="Sport Complex home"><span className="brand-mark">S</span><span>SPORT COMPLEX<span className="brand-dot">.</span></span></button>
         <nav><button className={page === 'home' ? 'active' : ''} type="button" onClick={() => setPage('home')}>Home</button><button className={page === 'sports' ? 'active' : ''} type="button" onClick={() => setPage('sports')}>Book now</button><button className={page === 'facilities' ? 'active' : ''} type="button" onClick={() => setPage('facilities')}>Facilities</button>{user && <button className={page === 'reservations' ? 'active' : ''} type="button" onClick={() => setPage('reservations')}>Reservations</button>}</nav>
-        <div className="profile">{user ? <><button className="profile-trigger" type="button" onClick={() => setProfileOpen((open) => !open)}><span className="avatar">{user.firstName[0]}{user.lastName[0]}</span><span>{user.firstName} {user.lastName}</span><span className="chevron">⌄</span></button>{profileOpen && <div className="profile-menu"><span>{user.email}</span><button type="button" onClick={signOut}>Sign out</button></div>}</> : <button className="signin-link" type="button" onClick={() => { setAuthStep('details'); setModal('signin') }}>Sign in</button>}</div>
+        <div className="topbar-actions"><button className="theme-toggle" type="button" aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} aria-pressed={theme === 'dark'} onClick={() => setTheme((current) => current === 'dark' ? 'light' : 'dark')}><span aria-hidden="true">{theme === 'dark' ? '☼' : '☾'}</span><span>{theme === 'dark' ? 'Light' : 'Dark'}</span></button><div className="profile">{user ? <><button className="profile-trigger" type="button" onClick={() => setProfileOpen((open) => !open)}><span className="avatar">{user.firstName[0]}{user.lastName[0]}</span><span>{user.firstName} {user.lastName}</span><span className="chevron">⌄</span></button>{profileOpen && <div className="profile-menu"><span>{user.email}</span><button type="button" onClick={signOut}>Sign out</button></div>}</> : <button className="signin-link" type="button" onClick={() => { setAuthStep('details'); setModal('signin') }}>Sign in</button>}</div></div>
       </header>
 
       {page === 'home' && <section className="hero page-section" id="top"><div className="hero-copy-block"><p className="eyebrow">Open daily · 6:00 am — 11:00 pm</p><h1>Make room<br /><em>for your game.</em></h1><p className="hero-copy">Six ways to play, one place to meet. Find your court, choose your time, and make it yours.</p><button className="hero-cta" type="button" onClick={() => setPage('sports')}>Book now</button></div></section>}
