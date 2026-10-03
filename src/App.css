@@ -419,6 +419,7 @@ footer { border-color: var(--line); color: #9cad9f; }
 .theme-light .duration-group button, .theme-light .slot-grid button { background: #fafaf5; border-color: var(--line); color: var(--ink); }
 .theme-light .duration-group button.selected { background: var(--dark); color: var(--lime); }
 .theme-light .profile-menu { background: #f5f5ef; border-color: var(--line); color: var(--ink); box-shadow: 0 12px 28px rgba(23, 35, 31, .16); }
+.theme-light .profile-menu button { border-color: #78917d; color: #315d3d; }
 .theme-light .my-booking, .theme-light .booked-card, .theme-light .reservation-card { background: var(--dark); color: #eff3e8; }
 .theme-light .modal { background: #f5f5ef; color: var(--ink); }
 .theme-light .modal-copy { color: #53625b; }
@@ -450,6 +451,9 @@ footer { border-color: var(--line); color: #9cad9f; }
 .theme-light .reservation-tabs { border-color: #b8c7b5; }
 .theme-light .reservation-tabs button { color: #53665a; }
 .theme-light .reservation-tabs button.active { color: #315d3d; border-bottom-color: #315d3d; }
+.theme-light .status-badge { border-color: #315d3d; color: #315d3d; }
+.theme-light .status-cancelled .status-badge { border-color: #a35345; color: #a35345; }
+.theme-light .status-paid .status-badge { border-color: #32724d; color: #32724d; }
 .theme-light .booked-details { border-color: #55735e; }
 .theme-light .booked-details small { color: #b7d0ba; }
 .theme-light .booked-details strong { color: #f0f7ed; }
@@ -458,6 +462,7 @@ footer { border-color: var(--line); color: #9cad9f; }
 .theme-light .completed-demo-card { background: #edf3ea; border-color: #8ca78e; color: var(--ink); }
 .theme-light .completed-demo-card h2 { color: var(--ink); }
 .theme-light .completed-demo-card p:not(.eyebrow) { color: #53665a; }
+.theme-light .completed-demo-card .status-badge { border-color: #315d3d; color: #315d3d; }
 .theme-light footer { color: #53665a; }
 
 /* On the light lime court tile, dark active strokes have stronger contrast
