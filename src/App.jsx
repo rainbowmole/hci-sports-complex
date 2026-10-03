@@ -75,6 +75,10 @@ function SharedCourtDiagram({ sport, facility = false }) {
   return <svg viewBox="0 0 520 270" className={`shared-court-svg ${facility ? 'shared-court-facility' : `shared-court-${sport}`}`} aria-hidden="true"><g className="basketball-lines"><rect x="8" y="8" width="504" height="254" rx="2" /><path d="M260 8v254M8 70h105v130H8M512 70H407v130h105" /><path className="three-point-lines" d="M8 30H104Q240 135 104 240H8M512 30H416Q280 135 416 240H512" /><path className="free-throw-lines" d="M113 101a34 34 0 0 1 0 68M407 101a34 34 0 0 0 0 68" /><circle cx="39" cy="135" r="8" /><circle cx="481" cy="135" r="8" /></g><g className="volleyball-lines" transform="translate(78 47.25) scale(.70 .65)"><rect x="8" y="8" width="504" height="254" rx="2" /><path d="M260 8v254M130 8v254M390 8v254M8 8h504v254H8z" /></g></svg>
 }
 
+function DatePickerField({ date, inputRef, onChange, onOpen }) {
+  return <label className="date-field" htmlFor="date" onClick={onOpen}><span>▣</span><input ref={inputRef} id="date" type="date" value={date} min={localDateValue()} onChange={onChange} /></label>
+}
+
 function App() {
   const [page, setPage] = useState('home')
   const [sport, setSport] = useState(null)
@@ -108,6 +112,32 @@ function App() {
   const bookingStart = booking ? new Date(`${booking.date}T${booking.time}:00`) : null
   const canCancel = bookingStart ? bookingStart.getTime() - now >= 30 * 60 * 1000 : false
 
+  // Open the native date picker from the entire custom field. Older browsers
+  // do not expose showPicker(), so focusing the input remains the fallback.
+  function openDatePicker() {
+    const input = dateInputRef.current
+    if (!input) return
+    if (typeof input.showPicker === 'function') {
+      try {
+        input.showPicker()
+        return
+      } catch (error) {
+        if (!(error instanceof DOMException) || error.name !== 'NotAllowedError') throw error
+      }
+    }
+    input.focus()
+  }
+
+  // A reservation remains in local state after sign-out. This check is used
+  // again after authentication so a pending guest booking cannot bypass it.
+  function reservationConflictMessage(accountEmail = user?.email) {
+    if (!hasActiveReservation || !booking.ownerEmail || booking.ownerEmail === accountEmail) {
+      if (sameDayReservation) return 'You already have a reservation on this date.'
+      if (reservationOverlapsExistingBooking()) return 'This time overlaps your existing reservation.'
+    }
+    return ''
+  }
+
   function chooseSport(id) {
     setSport(id)
     setCourt(null)
@@ -122,7 +152,7 @@ function App() {
   }
 
   function confirmBooking() {
-    if (!canBook || sameDayReservation || reservationOverlapsExistingBooking()) {
+    if (!canBook || reservationConflictMessage()) {
       setModal(null)
       return
     }
@@ -137,7 +167,9 @@ function App() {
   }
 
   function completePayment() {
-    setBooking({ sport, court, date, time, duration, totalPrice, downpayment, status: 'remaining balance', paymentReference })
+    // Save the account email with the reservation so it can be matched again
+    // if the user signs out, starts another booking, and then signs back in.
+    setBooking({ sport, court, date, time, duration, totalPrice, downpayment, status: 'remaining balance', paymentReference, ownerEmail: user.email })
     setModal('payment-success')
   }
 
@@ -164,7 +196,14 @@ function App() {
       setAuthError('Use at least 8 characters and make both passwords match.')
       return
     }
-    setUser({ firstName: authForm.firstName, lastName: authForm.lastName, email: authForm.email })
+    const signedInUser = { firstName: authForm.firstName, lastName: authForm.lastName, email: authForm.email }
+    setUser(signedInUser)
+    if (canBook && reservationConflictMessage(signedInUser.email)) {
+      setAuthError(reservationConflictMessage(signedInUser.email))
+      setAuthStep('details')
+      setModal('signin')
+      return
+    }
     setModal(court && time ? 'confirm' : null)
   }
 
@@ -200,6 +239,8 @@ function App() {
   }
 
   function signOut() {
+    // Keep the reservation while clearing the session; this mirrors a
+    // server-backed account where reservations outlive the login session.
     setUser(null)
     setProfileOpen(false)
     setPage('home')
@@ -236,7 +277,7 @@ function App() {
 
       {page === 'booking' && <section className="page-section booking-page"><div className="booking-grid">
         <div className="map-panel"><div className="panel-heading"><div><h2>{selectedSport.label}</h2><p>{selectedSport.id === 'basketball' || selectedSport.id === 'volleyball' ? 'Choose a shared court' : `${map.count} spaces available`}</p></div><span className="map-key"><i></i> Available <i className="key-selected"></i> Selected <i className="key-full"></i> Fully booked</span></div><div className={`venue-map ${map.kind}`}>{Array.from({ length: map.count }, (_, index) => <button type="button" key={index} className={`venue-item ${court === index + 1 ? 'selected' : ''}`} onClick={() => { setCourt(index + 1); setTime(null) }} aria-label={`${map.prefix} ${index + 1}`}><span className="venue-drawing">{sport === 'basketball' || sport === 'volleyball' ? <SharedCourtDiagram sport={sport} /> : <CourtDiagram kind={map.kind} />}</span><strong>{map.prefix} {index + 1}</strong><small>{court === index + 1 ? 'Selected' : 'Available'}</small></button>)}</div><button className="back-link court-back-link" type="button" onClick={() => setPage('sports')}>← Back to sports</button></div>
-        <aside className="details-panel"><h2>Booking</h2><label className="field-label date-label" htmlFor="date">Pick a date</label><label className="date-field" htmlFor="date" onClick={(event) => { if (event.target !== dateInputRef.current) dateInputRef.current?.showPicker?.() }}><span>▣</span><input ref={dateInputRef} id="date" type="date" value={date} min={localDateValue()} onChange={(event) => { setDate(event.target.value); setTime(null) }} /></label><div className="date-summary"><strong>{formatDate(date)}</strong><span>Local time</span></div><label className="field-label">Rates</label><div className="duration-group">{[1, 2, 3].map((hours) => <button key={hours} type="button" className={duration === hours ? 'selected' : ''} onClick={() => selectDuration(hours)}>{hours} hr{hours > 1 ? 's' : ''}<small>{formatCurrency(pricing[sport]?.[hours] || 0)}</small></button>)}</div><div className="price-summary"><span>{court ? `${map.prefix} ${court}` : 'Selected package'}</span><strong>{duration} hr{duration > 1 ? 's' : ''} | {formatCurrency(totalPrice)}</strong></div>{court ? <><label className="field-label slot-label">Available start times</label><div className="slot-grid">{slots.map((slot) => { const unavailable = slotIsUnavailable(slot); const selected = time === slot; const busySlots = busySlotsByCourt[court] || []; return <button key={slot} type="button" disabled={unavailable} className={`${selected ? 'selected' : ''} ${unavailable ? 'unavailable' : ''}`} onClick={() => setTime(slot)}>{slot}<small>{busySlots.includes(slot) ? 'Booked' : unavailable ? 'Unavailable' : 'Open'}</small></button> })}</div>{sameDayReservation && <p className="hint reservation-warning">You already have a reservation on this date. Choose another date to book again.</p>}</> : <p className="hint">Choose a court above to see its available times.</p>}</aside>
+        <aside className="details-panel"><h2>Booking</h2><label className="field-label date-label" htmlFor="date">Pick a date</label><DatePickerField date={date} inputRef={dateInputRef} onOpen={openDatePicker} onChange={(event) => { setDate(event.target.value); setTime(null) }} /><div className="date-summary"><strong>{formatDate(date)}</strong><span>Local time</span></div><label className="field-label">Rates</label><div className="duration-group">{[1, 2, 3].map((hours) => <button key={hours} type="button" className={duration === hours ? 'selected' : ''} onClick={() => selectDuration(hours)}>{hours} hr{hours > 1 ? 's' : ''}<small>{formatCurrency(pricing[sport]?.[hours] || 0)}</small></button>)}</div><div className="price-summary"><span>{court ? `${map.prefix} ${court}` : 'Selected package'}</span><strong>{duration} hr{duration > 1 ? 's' : ''} | {formatCurrency(totalPrice)}</strong></div>{court ? <><label className="field-label slot-label">Available start times</label><div className="slot-grid">{slots.map((slot) => { const unavailable = slotIsUnavailable(slot); const selected = time === slot; const busySlots = busySlotsByCourt[court] || []; return <button key={slot} type="button" disabled={unavailable} className={`${selected ? 'selected' : ''} ${unavailable ? 'unavailable' : ''}`} onClick={() => setTime(slot)}>{slot}<small>{busySlots.includes(slot) ? 'Booked' : unavailable ? 'Unavailable' : 'Open'}</small></button> })}</div>{sameDayReservation && <p className="hint reservation-warning">You already have a reservation on this date. Choose another date to book again.</p>}</> : <p className="hint">Choose a court above to see its available times.</p>}</aside>
       </div><div className="booking-footer"><button type="button" className="reserve-button review-button" disabled={!canBook || sameDayReservation || reservationOverlapsExistingBooking()} onClick={() => setModal('confirm')}>Review reservation<span>↗</span></button></div></section>}
 
       {page === 'facilities' && <section className="page-section facilities-page"><div className="page-heading"><div><p className="eyebrow">Sport Complex</p><h1>Facilities.</h1><p>Every space, laid out so you can see the whole club.</p></div></div><div className="facility-plan"><div className="facility-label">Entrance / reception</div><div className="facility-west"><button className="facility-space" type="button" onClick={() => goToSport('pickleball')}><span>Pickleball 1</span><CourtDiagram kind="pickleball" /></button><button className="facility-space" type="button" onClick={() => goToSport('pickleball')}><span>Pickleball 2</span><CourtDiagram kind="pickleball" /></button></div><div className="facility-center">{['Badminton 1', 'Badminton 2', 'Badminton 3', 'Badminton 4'].map((label) => <button className="facility-space" type="button" key={label} onClick={() => goToSport('badminton')}><span>{label}</span><CourtDiagram kind="badminton" /></button>)}</div><div className="facility-east"><button className="facility-space" type="button" onClick={() => goToSport('table-tennis')}><span>Table tennis space</span><CourtDiagram kind="table" /></button><button className="facility-space" type="button" onClick={() => goToSport('billiards')}><span>Billiards space</span><CourtDiagram kind="billiards" /></button></div><div className="facility-south"><button className="facility-space" type="button" onClick={() => goToSport('basketball')}><span>Basketball / Volleyball</span><SharedCourtDiagram facility /></button><button className="facility-space" type="button" onClick={() => goToSport('volleyball')}><span>Basketball / Volleyball</span><SharedCourtDiagram facility /></button></div></div></section>}
