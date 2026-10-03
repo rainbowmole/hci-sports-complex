@@ -376,6 +376,10 @@ footer { border-color: var(--line); color: #9cad9f; }
 }
 .booked-actions { flex-wrap: wrap; }
 .demo-placeholder { margin: 18px 0 0; padding: 11px 13px; border: 1px dashed #6d8a73; background: rgba(109, 138, 115, .12); color: #9fbd8a; font-size: 10px; line-height: 1.45; }
+.completed-demo-card { max-width: 1000px; margin: 24px auto 40px; padding: 28px 38px; border: 1px dashed #6d8a73; background: #21362b; color: #eff3e8; }
+.completed-demo-card h2 { margin: 0; color: #f1f8ed; font: 500 28px/1 Georgia, serif; }
+.completed-demo-card p:not(.eyebrow) { color: #c7d8ca; margin: 12px 0 20px; }
+.completed-demo-card .reserve-button { max-width: 230px; margin: 0; }
 
 .topbar-actions { display: flex; align-items: center; gap: 16px; }
 .theme-toggle { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); border-radius: 999px; padding: 8px 11px; background: transparent; color: var(--ink); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
@@ -443,6 +447,9 @@ footer { border-color: var(--line); color: #9cad9f; }
 .theme-light .booked-details strong { color: #f0f7ed; }
 .theme-light .empty-booked-card p:not(.eyebrow) { color: #c7d8ca; }
 .theme-light .demo-placeholder { border-color: #8ca78e; background: #edf3ea; color: #416d4b; }
+.theme-light .completed-demo-card { background: #edf3ea; border-color: #8ca78e; color: var(--ink); }
+.theme-light .completed-demo-card h2 { color: var(--ink); }
+.theme-light .completed-demo-card p:not(.eyebrow) { color: #53665a; }
 .theme-light footer { color: #53665a; }
 
 /* On the light lime court tile, dark active strokes have stronger contrast
