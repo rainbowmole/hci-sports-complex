@@ -103,6 +103,7 @@ function App() {
   const [authError, setAuthError] = useState('')
   const [profileOpen, setProfileOpen] = useState(false)
   const [paymentReference, setPaymentReference] = useState('')
+  const [reservationTab, setReservationTab] = useState('current')
   const [now, setNow] = useState(() => Date.now())
   const [theme, setTheme] = useState(() => window.localStorage.getItem('sport-complex-theme') || 'dark')
   const dateInputRef = useRef(null)
@@ -191,6 +192,7 @@ function App() {
     // Save the account email with the reservation so it can be matched again
     // if the user signs out, starts another booking, and then signs back in.
     setBooking({ sport, court, date, time, duration, totalPrice, downpayment, status: 'remaining balance', paymentReference, ownerEmail: user.email })
+    setReservationTab('current')
     setModal('payment-success')
   }
 
@@ -282,16 +284,6 @@ function App() {
     setModal(null)
   }
 
-  // Provides a safe local preview of the completed-session repeat-booking UX.
-  function startCompletedReservationDemo() {
-    setSport('basketball')
-    setCourt(1)
-    setDate('')
-    setDuration(1)
-    setTime(null)
-    setPage('booking')
-  }
-
   function statusLabel(status) {
     if (status === 'cancelled') return 'Cancelled'
     if (sessionFinished) return 'Session ended'
@@ -303,6 +295,12 @@ function App() {
     bookingStart &&
     bookingStart.getTime() + (booking?.duration || 0) * 60 * 60 * 1000 <= now,
   )
+  const reservationIsPast = Boolean(booking && (booking.status === 'cancelled' || sessionFinished))
+  const hasCurrentReservation = Boolean(booking && !reservationIsPast)
+  const hasPastReservation = Boolean(booking && reservationIsPast)
+  const reservationToShow = reservationTab === 'past'
+    ? (hasPastReservation ? booking : null)
+    : (hasCurrentReservation ? booking : null)
 
   return (
     <main className={`app-shell theme-${theme}`}>
@@ -323,7 +321,7 @@ function App() {
 
       {page === 'facilities' && <section className="page-section facilities-page"><div className="page-heading"><div><p className="eyebrow">Sport Complex</p><h1>Facilities.</h1><p>Every space, laid out so you can see the whole club.</p></div></div><div className="facility-plan"><div className="facility-label">Entrance / reception</div><div className="facility-west"><button className="facility-space" type="button" onClick={() => goToSport('pickleball')}><span>Pickleball 1</span><CourtDiagram kind="pickleball" /></button><button className="facility-space" type="button" onClick={() => goToSport('pickleball')}><span>Pickleball 2</span><CourtDiagram kind="pickleball" /></button></div><div className="facility-center">{['Badminton 1', 'Badminton 2', 'Badminton 3', 'Badminton 4'].map((label) => <button className="facility-space" type="button" key={label} onClick={() => goToSport('badminton')}><span>{label}</span><CourtDiagram kind="badminton" /></button>)}</div><div className="facility-east"><button className="facility-space" type="button" onClick={() => goToSport('table-tennis')}><span>Table tennis space</span><CourtDiagram kind="table" /></button><button className="facility-space" type="button" onClick={() => goToSport('billiards')}><span>Billiards space</span><CourtDiagram kind="billiards" /></button></div><div className="facility-south"><button className="facility-space" type="button" onClick={() => goToSport('basketball')}><span>Basketball / Volleyball</span><SharedCourtDiagram facility /></button><button className="facility-space" type="button" onClick={() => goToSport('volleyball')}><span>Basketball / Volleyball</span><SharedCourtDiagram facility /></button></div></div></section>}
 
-      {page === 'reservations' && user && <section className="page-section booked-page"><div className="page-heading"><div><p className="eyebrow">Your account</p><h1>Reservations.</h1><p>Keep track of your court, payment, and next visit.</p></div><span className="page-mark">SC<br /><small>ACCOUNT</small></span></div>{booking ? <section className={`booked-card status-${(booking.status || 'remaining balance').replace(' ', '-')}`}><div className="booked-card-heading"><div><p className="eyebrow">Reservation details</p><h2>{sports.find((item) => item.id === booking.sport).label} · {venueMap[booking.sport].prefix} {booking.court}</h2></div><span className="status-badge">{statusLabel(booking.status)}</span></div><div className="booked-details"><span><small>Date</small><strong>{formatDate(booking.date)}</strong></span><span><small>Start time</small><strong>{booking.time}</strong></span><span><small>Duration</small><strong>{booking.duration} hour{booking.duration > 1 ? 's' : ''}</strong></span></div><div className="payment-summary"><span>Total price <strong>{formatCurrency(booking.totalPrice)}</strong></span><span>50% downpayment <strong>{formatCurrency(booking.downpayment)}</strong></span><span>Balance <strong>{formatCurrency(booking.totalPrice - booking.downpayment)}</strong></span></div><div className="booked-actions">{sessionFinished && booking.status !== 'cancelled' && <button type="button" className="reserve-button" onClick={bookAgain}>Book this again <span></span></button>}{booking.status !== 'cancelled' && <button type="button" className="cancel-button" disabled={!canCancel} onClick={() => setModal('cancel')}>{canCancel ? 'Cancel booking' : 'Cancellation closed'}</button>}</div></section> : <><section className="empty-booked-card"><p className="eyebrow">No reservations yet</p><h2>Your next game starts here.</h2><p>Choose a sport and reserve a court in a few quick steps.</p><button type="button" className="reserve-button" onClick={() => setPage('sports')}>Make a reservation <span>↗</span></button></section><section className="completed-demo-card"><p className="eyebrow">Completed-session example</p><div className="booked-card-heading"><div><h2>Basketball · Court 1</h2><p>Court 1 · 1 hour rate</p></div><span className="status-badge">Session ended</span></div><p>Choose a new date and start time. You can change the duration before reviewing.</p><button type="button" className="reserve-button" onClick={startCompletedReservationDemo}>Book this again <span>↻</span></button></section></>}</section>}
+      {page === 'reservations' && user && <section className="page-section booked-page"><div className="page-heading"><div><p className="eyebrow">Your account</p><h1>Reservations.</h1><p>Keep track of your court, payment, and past visits.</p></div><span className="page-mark">SC<br /><small>ACCOUNT</small></span></div>{hasPastReservation && <div className="reservation-tabs" role="tablist" aria-label="Reservation views"><button type="button" className={reservationTab === 'current' ? 'active' : ''} role="tab" aria-selected={reservationTab === 'current'} onClick={() => setReservationTab('current')}>Current</button><button type="button" className={reservationTab === 'past' ? 'active' : ''} role="tab" aria-selected={reservationTab === 'past'} onClick={() => setReservationTab('past')}>Past reservations</button></div>}{reservationToShow ? <section className={`booked-card status-${(reservationToShow.status || 'remaining balance').replace(' ', '-')}`}><div className="booked-card-heading"><div><p className="eyebrow">Reservation details</p><h2>{sports.find((item) => item.id === reservationToShow.sport).label} · {venueMap[reservationToShow.sport].prefix} {reservationToShow.court}</h2></div><span className="status-badge">{statusLabel(reservationToShow.status)}</span></div><div className="booked-details"><span><small>Date</small><strong>{formatDate(reservationToShow.date)}</strong></span><span><small>Start time</small><strong>{reservationToShow.time}</strong></span><span><small>Duration</small><strong>{reservationToShow.duration} hour{reservationToShow.duration > 1 ? 's' : ''}</strong></span></div><div className="payment-summary"><span>Total price <strong>{formatCurrency(reservationToShow.totalPrice)}</strong></span><span>50% downpayment <strong>{formatCurrency(reservationToShow.downpayment)}</strong></span><span>Balance <strong>{formatCurrency(reservationToShow.totalPrice - reservationToShow.downpayment)}</strong></span></div><div className="booked-actions">{reservationTab === 'past' && sessionFinished && reservationToShow.status !== 'cancelled' && <button type="button" className="reserve-button" onClick={bookAgain}>Book this again <span></span></button>}{reservationTab === 'current' && reservationToShow.status !== 'cancelled' && <button type="button" className="cancel-button" disabled={!canCancel} onClick={() => setModal('cancel')}>{canCancel ? 'Cancel booking' : 'Cancellation closed'}</button>}</div></section> : <section className="empty-booked-card"><p className="eyebrow">{reservationTab === 'past' ? 'No past reservations yet' : 'No reservations yet'}</p><h2>{reservationTab === 'past' ? 'Your history will appear here.' : 'Your next game starts here.'}</h2><p>{reservationTab === 'past' ? 'Completed and cancelled reservations will be kept in this tab.' : 'Choose a sport and reserve a court in a few quick steps.'}</p>{!hasPastReservation && <button type="button" className="reserve-button" onClick={() => setPage('sports')}>Make a reservation <span>↗</span></button>}</section>}</section>}
 
       <footer><span>SPORT COMPLEX / COMMUNITY SPORTS CLUB</span><span>Need a hand? hello@sportcomplex.club</span><span>© 2026</span></footer>
 
